@@ -1,4 +1,3 @@
-
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
@@ -51,6 +50,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["github"],
+      allowDifferentEmails: false,
+      requireLocalEmailVerified: false,
+    },
   },
   socialProviders,
 });
