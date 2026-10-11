@@ -1540,3 +1540,134 @@ select:focus-visible {
   height: 28px;
   object-fit: contain;
 }
+
+.account-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.account-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 300px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.account-menu__trigger:hover,
+.account-menu__trigger[aria-expanded="true"] {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.account-menu__avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 750;
+}
+
+.account-menu__trigger-name {
+  overflow: hidden;
+  max-width: 190px;
+  font-size: 14px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu__arrow {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.account-menu__dropdown {
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(290px, calc(100vw - 28px));
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(23 37 28 / 12%);
+}
+
+.account-menu__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-menu__identity strong {
+  overflow-wrap: anywhere;
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.account-menu__identity span {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.account-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.account-menu__item:hover {
+  background: var(--green-soft);
+}
+
+.account-menu__signout {
+  color: var(--red);
+}
+
+.account-menu__signout:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (max-width: 560px) {
+  .account-menu__trigger {
+    gap: 6px;
+    padding: 5px;
+  }
+
+  .account-menu__trigger-name {
+    max-width: 105px;
+    font-size: 12px;
+  }
+
+  .account-menu__dropdown {
+    right: 0;
+  }
+}

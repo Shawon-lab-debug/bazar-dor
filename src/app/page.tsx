@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AccountMenu from "@/components/AccountMenu";
 
 type Product = {
   id: number;
@@ -60,6 +61,7 @@ function getProducts(payload: unknown): Product[] {
 
     if (candidate && typeof candidate === "object") {
       const nested = getProducts(candidate);
+
       if (nested.length > 0) {
         return nested;
       }
@@ -165,6 +167,7 @@ function ProductCard({ product }: { product: Product }) {
             <span className="price-label">আজকের দাম</span>
             <p className="product-price">{formatPrice(product.today)}</p>
           </div>
+
           <ChangeBadge product={product} />
         </div>
       </article>
@@ -197,6 +200,7 @@ function ProductSection({
           </h2>
           <p>{subtitle}</p>
         </div>
+
         <span className="section-count">
           {formatNumber(products.length)}টি পণ্য
         </span>
@@ -204,7 +208,10 @@ function ProductSection({
 
       <div className="product-grid">
         {products.map((product) => (
-          <ProductCard key={product.id ?? product.slug} product={product} />
+          <ProductCard
+            key={product.id ?? product.slug}
+            product={product}
+          />
         ))}
       </div>
     </section>
@@ -276,6 +283,7 @@ export default function Home() {
     }
 
     loadProducts();
+
     return () => controller.abort();
   }, []);
 
@@ -358,20 +366,14 @@ export default function Home() {
                 className="brand-logo-image"
               />
             </span>
+
             <span className="brand-copy">
               <strong>বাজার দর</strong>
               <small>{todayDate || "প্রতিদিনের বাজার, এক নজরে"}</small>
             </span>
           </Link>
 
-          <div className="header-actions">
-            <Link className="sign-in-link" href="/signin">
-              সাইন ইন
-            </Link>
-            <Link className="primary-button header-sign-up" href="/signup">
-              সাইন আপ
-            </Link>
-          </div>
+          <AccountMenu />
         </div>
 
         <nav className="category-nav" aria-label="পণ্যের ক্যাটাগরি">
@@ -379,6 +381,7 @@ export default function Home() {
             <Link className="category-link active" href="/">
               <span>🛍️</span> সব পণ্য
             </Link>
+
             {categories.map((category) => (
               <Link
                 key={category.id}

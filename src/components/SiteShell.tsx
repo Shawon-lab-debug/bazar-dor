@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import AccountMenu from "@/components/AccountMenu";
 
 const API_URL = "https://api.api-store.workers.dev/api/bazardor";
 
@@ -153,19 +154,19 @@ function SharedSiteLayout({ children }: { children: ReactNode }) {
   const [todayDate, setTodayDate] = useState("");
 
   useEffect(() => {
-  const timer = window.setTimeout(() => {
-    setTodayDate(
-      new Intl.DateTimeFormat("bn-BD", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(new Date()),
-    );
-  }, 0);
+    const timer = window.setTimeout(() => {
+      setTodayDate(
+        new Intl.DateTimeFormat("bn-BD", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(new Date()),
+      );
+    }, 0);
 
-  return () => window.clearTimeout(timer);
-}, []);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -272,17 +273,7 @@ function SharedSiteLayout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <div className="header-actions">
-            <Link className="sign-in-link" href="/signin">
-              সাইন ইন
-            </Link>
-            <Link
-              className="primary-button header-sign-up"
-              href="/signup"
-            >
-              সাইন আপ
-            </Link>
-          </div>
+          <AccountMenu />
         </div>
 
         <nav className="category-nav" aria-label="পণ্যের ক্যাটাগরি">
