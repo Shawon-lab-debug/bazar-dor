@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import SiteShell from "../components/SiteShell";
 
 export const metadata: Metadata = {
   title: "বাজার দর | আজকের বাজারের দাম এক নজরে",
@@ -37,7 +38,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="bn">
-      <body>{children}</body>
+      <body>
+        <SiteShell>{children}</SiteShell>
+      </body>
     </html>
   );
 }

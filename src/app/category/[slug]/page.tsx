@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import "./category-page.css";
 
 type Product = {
   id: number;
@@ -73,36 +74,6 @@ function formatPrice(value: number): string {
   return `${formatNumber(value)} টাকা`;
 }
 
-function getChange(product: Product): number {
-  return Number(
-    product.change?.pct ??
-      (product.yesterday
-        ? ((product.today - product.yesterday) / product.yesterday) * 100
-        : 0),
-  );
-}
-
-function getDirection(product: Product): string {
-  const direction = product.change?.dir;
-
-  if (direction === "flat" || direction === "same") {
-    return "flat";
-  }
-
-  if (direction === "up" || direction === "down") {
-    return direction;
-  }
-
-  if (
-    product.yesterday === undefined ||
-    product.today === product.yesterday
-  ) {
-    return "flat";
-  }
-
-  return product.today > product.yesterday ? "up" : "down";
-}
-
 function getUnit(unit?: string): string {
   const units: Record<string, string> = {
     kg: "প্রতি কেজি",
@@ -114,6 +85,41 @@ function getUnit(unit?: string): string {
   };
 
   return units[unit ?? ""] ?? (unit ? `প্রতি ${unit}` : "প্রতি কেজি");
+}
+
+function getDirection(product: Product): "up" | "down" | "flat" {
+  if (
+    product.change?.dir === "up" ||
+    product.change?.dir === "down"
+  ) {
+    return product.change.dir;
+  }
+
+  if (
+    typeof product.yesterday !== "number" ||
+    product.today === product.yesterday
+  ) {
+    return "flat";
+  }
+
+  return product.today > product.yesterday ? "up" : "down";
+}
+
+function getChange(product: Product): number {
+  if (typeof product.change?.pct === "number") {
+    return product.change.pct;
+  }
+
+  if (
+    typeof product.yesterday === "number" &&
+    product.yesterday !== 0
+  ) {
+    return (
+      ((product.today - product.yesterday) / product.yesterday) * 100
+    );
+  }
+
+  return 0;
 }
 
 function ProductCard({ product }: { product: Product }) {
@@ -141,7 +147,9 @@ function ProductCard({ product }: { product: Product }) {
         <div className="product-price-row">
           <div>
             <span className="price-label">আজকের দাম</span>
-            <p className="product-price">{formatPrice(product.today)}</p>
+            <p className="product-price">
+              {formatPrice(product.today)}
+            </p>
           </div>
 
           <span
@@ -168,34 +176,30 @@ function ProductCard({ product }: { product: Product }) {
 
 function CategoryLoading() {
   return (
-    <main className="main-content page-container">
-      <section className="content-section">
-        <div className="section-heading">
-          <div>
-            <h1>ক্যাটাগরি লোড হচ্ছে...</h1>
-            <p>অনুগ্রহ করে অপেক্ষা করুন।</p>
-          </div>
-        </div>
+    <main className="main-content page-container category-page">
+      <div className="category-hero-skeleton">
+        <div className="skeleton-line" />
+        <div className="skeleton-line short" />
+      </div>
 
-        <div
-          className="product-grid loading-grid"
-          role="status"
-          aria-label="পণ্য লোড হচ্ছে"
-        >
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div className="product-skeleton" key={index}>
-              <div className="skeleton-line" />
-              <div className="skeleton-line short" />
-              <div className="skeleton-line price" />
-            </div>
-          ))}
-        </div>
-      </section>
+      <div
+        className="product-grid loading-grid"
+        role="status"
+        aria-label="পণ্য লোড হচ্ছে"
+      >
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div className="product-skeleton" key={index}>
+            <div className="skeleton-line" />
+            <div className="skeleton-line short" />
+            <div className="skeleton-line price" />
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
 
-function CategoryPageContent() {
+function CategoryContent() {
   const params = useParams<{ slug: string }>();
   const slug = decodeURIComponent(params.slug);
 
@@ -213,25 +217,28 @@ function CategoryPageContent() {
       setError("");
 
       try {
-        const [productsResponse, categoriesResponse] = await Promise.all([
-          fetch(
-            `${API_URL}/products?category=${encodeURIComponent(slug)}`,
-            {
+        const [productsResponse, categoriesResponse] =
+          await Promise.all([
+            fetch(
+              `${API_URL}/products?category=${encodeURIComponent(slug)}`,
+              {
+                signal: controller.signal,
+                cache: "no-store",
+              },
+            ),
+            fetch(`${API_URL}/categories`, {
               signal: controller.signal,
               cache: "no-store",
-            },
-          ),
-          fetch(`${API_URL}/categories`, {
-            signal: controller.signal,
-            cache: "no-store",
-          }),
-        ]);
+            }),
+          ]);
 
         if (!productsResponse.ok) {
           throw new Error("ক্যাটাগরির পণ্য লোড করা যায়নি।");
         }
 
-        const productsPayload: unknown = await productsResponse.json();
+        const productsPayload: unknown =
+          await productsResponse.json();
+
         const productsData = findArray(productsPayload) as Product[];
 
         setProducts(
@@ -244,9 +251,12 @@ function CategoryPageContent() {
         );
 
         if (categoriesResponse.ok) {
-          const categoriesPayload: unknown = await categoriesResponse.json();
+          const categoriesPayload: unknown =
+            await categoriesResponse.json();
 
-          setCategories(findArray(categoriesPayload) as Category[]);
+          setCategories(
+            findArray(categoriesPayload) as Category[],
+          );
         }
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
@@ -303,19 +313,31 @@ function CategoryPageContent() {
     products.some((product) => product.category === slug);
 
   return (
-    <main className="main-content page-container">
-      <section className="content-section">
-        <div className="section-heading all-products-heading">
-          <div>
-            <h1>
-              <span className="section-icon">{categoryIcon} </span>
-              {categoryName}
-            </h1>
-            <p>এই ক্যাটাগরির নিত্যপ্রয়োজনীয় পণ্যের বাজারদর</p>
-          </div>
+    <main className="main-content page-container category-page">
+      <section className="category-hero-card">
+        <div className="category-hero-icon" aria-hidden="true">
+          {categoryIcon}
+        </div>
 
-          <label className="sort-control">
+        <div className="category-hero-info">
+          <h1>{categoryName}</h1>
+          <p>
+            {loading
+              ? "পণ্যের তথ্য লোড হচ্ছে..."
+              : `${formatNumber(products.length)}টি পণ্যের আজকের দাম ও পরিবর্তন`}
+          </p>
+        </div>
+      </section>
+
+      <section className="category-products-section">
+        <div className="category-products-toolbar">
+          <p>
+            মোট {formatNumber(products.length)}টি পণ্য দেখানো হচ্ছে
+          </p>
+
+          <label className="category-sort-control">
             <span>সাজান</span>
+
             <select
               value={sortOrder}
               onChange={(event) => setSortOrder(event.target.value)}
@@ -329,11 +351,7 @@ function CategoryPageContent() {
         </div>
 
         {loading && (
-          <div
-            className="product-grid loading-grid"
-            role="status"
-            aria-label="পণ্য লোড হচ্ছে"
-          >
+          <div className="product-grid loading-grid">
             {Array.from({ length: 6 }).map((_, index) => (
               <div className="product-skeleton" key={index}>
                 <div className="skeleton-line" />
@@ -345,21 +363,20 @@ function CategoryPageContent() {
         )}
 
         {!loading && error && (
-          <div className="state-panel error-panel" role="alert">
+          <div className="category-state-panel" role="alert">
             <h2>তথ্য লোড করা যায়নি</h2>
             <p>{error}</p>
-            <Link className="primary-button" href="/">
+            <Link href="/" className="primary-button">
               হোম পেজে ফিরে যান
             </Link>
           </div>
         )}
 
         {!loading && !error && !categoryExists && (
-          <div className="empty-state">
-            <span>🔎</span>
+          <div className="category-state-panel">
             <h2>ক্যাটাগরি পাওয়া যায়নি</h2>
             <p>এই ক্যাটাগরিটি সঠিক নয় অথবা এখানে কোনো পণ্য নেই।</p>
-            <Link className="primary-button" href="/">
+            <Link href="/" className="primary-button">
               হোম পেজে ফিরে যান
             </Link>
           </div>
@@ -369,11 +386,9 @@ function CategoryPageContent() {
           !error &&
           categoryExists &&
           sortedProducts.length === 0 && (
-            <div className="empty-state">
-              <span>🛒</span>
+            <div className="category-state-panel">
               <h2>এই ক্যাটাগরিতে কোনো পণ্য নেই</h2>
-              <p>অন্য ক্যাটাগরি থেকে পণ্য দেখুন।</p>
-              <Link className="primary-button" href="/">
+              <Link href="/" className="primary-button">
                 হোম পেজে ফিরে যান
               </Link>
             </div>
@@ -397,7 +412,7 @@ function CategoryPageContent() {
 export default function CategoryPage() {
   return (
     <Suspense fallback={<CategoryLoading />}>
-      <CategoryPageContent />
+      <CategoryContent />
     </Suspense>
   );
 }
